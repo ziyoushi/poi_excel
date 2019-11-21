@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.zb.data.poi.mapper.DemoDataMapper">
+
+    <!-- 批量插入demoData -->
+    <insert id="batchAddDemoData" >
+        insert into t_demodata(string,date,doubleData) values
+        <foreach collection="list" item="item" separator=",">
+            (#{item.string},#{item.date},#{item.doubleData})
+        </foreach>
+    </insert>
+
+    <resultMap id="requestMap" type="com.zb.data.poi.entity.DemoData">
+        <result column="string" property="string"/>
+        <result column="date" property="date"/>
+        <result column="doubleData" property="doubleData"/>
+    </resultMap>
+
+    <!-- List<DemoData> (); -->
+    <select id="queryAll" resultMap="requestMap">
+        select * from t_demodata
+    </select>
+
+</mapper>

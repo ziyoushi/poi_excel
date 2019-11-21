@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.zb.data.poi.mapper.OpChargingRuleTimeperiodDao">
+
+	<!-- 可根据自己的需求，是否要使用 -->
+    <resultMap type="com.zb.data.poi.entity.OpChargingRuleTimeperiodEntity" id="opChargingRuleTimeperiodMap">
+        <result property="id" column="id"/>
+        <result property="siteId" column="site_id"/>
+        <result property="chargingRuleId" column="charging_rule_id"/>
+        <result property="startTime" column="start_time"/>
+        <result property="endTime" column="end_time"/>
+    </resultMap>
+
+    <!-- 批量插入计费规则时间 -->
+    <!-- int (@Param("list") List<OpChargingRuleTimeperiodEntity> list); -->
+    <insert id="batchAddChargingTime">
+        insert  into `t_op_charging_rule_timeperiod`(`id`,`site_id`,`charging_rule_id`,`start_time`,`end_time`) values
+        <foreach collection="list" item="item" separator=",">
+            (#{item.id},#{item.siteId},#{item.chargingRuleId},#{item.startTime},#{item.endTime})
+        </foreach>
+    </insert>
+
+
+</mapper>

@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.zb.data.poi.mapper.OpChargingRuleBtpStdDao">
+
+	<!-- 可根据自己的需求，是否要使用 -->
+    <resultMap type="com.zb.data.poi.entity.OpChargingRuleBtpStdEntity" id="opChargingRuleBtpStdMap">
+        <result property="id" column="id"/>
+        <result property="chargingRuleBtpId" column="charging_rule_btp_id"/>
+        <result property="siteId" column="site_id"/>
+        <result property="periodNo" column="period_no"/>
+        <result property="periodName" column="period_name"/>
+        <result property="type" column="type"/>
+        <result property="count" column="count"/>
+        <result property="timeChargingAmount" column="time_charging_amount"/>
+        <result property="timeIntervalType" column="time_interval_type"/>
+    </resultMap>
+
+    <!-- int (@Param("list") List<OpChargingRuleBtpStdEntity> list); -->
+    <insert id="batchAddBtp" >
+        INSERT  INTO `t_op_charging_rule_btp_std`(`charging_rule_btp_id`,`site_id`,`period_no`,`period_name`,
+        `type`,`count`,`time_charging_amount`,`time_interval_type`) values
+        <foreach collection="list" item="item" separator=",">
+            (#{item.chargingRuleBtpId},#{item.siteId},#{item.periodNo},#{item.periodName},
+            #{item.type},#{item.count},#{item.timeChargingAmount},#{item.timeIntervalType})
+        </foreach>
+    </insert>
+
+
+</mapper>
