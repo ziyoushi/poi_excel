@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.zb.data.poi.mapper.OpConstructionStatusDao">
+
+	<!-- 可根据自己的需求，是否要使用 -->
+    <resultMap type="com.zb.data.poi.entity.OpConstructionStatusEntity" id="opConstructionStatusMap">
+        <result property="id" column="id"/>
+        <result property="siteId" column="site_id"/>
+        <result property="status" column="status"/>
+        <result property="planFinishDate" column="plan_finish_date"/>
+        <result property="actualFinishDate" column="actual_finish_date"/>
+        <result property="comments" column="comments"/>
+        <result property="constructionId" column="construction_id"/>
+        <result property="parkingId" column="parking_id"/>
+    </resultMap>
+
+    <!-- 批量添加construction -->
+
+    <!--<update id="batchAddConstruction" >
+        <foreach collection="list" separator=";" item="item">
+            update t_op_construction_status
+            <set>
+                <if test="item.planFinishDate != null and item.planFinishDate != ''">
+                    plan_finish_date = #{item.planFinishDate}
+                </if>
+            </set>
+            <where>
+                <if test="item.parkingId != null and item.parkingId != ''">
+                    `parking_id` = #{item.parkingId}
+                </if>
+            </where>
+        </foreach>
+
+    </update>-->
+
+    <insert id="batchAddConstruction">
+        insert into t_op_construction_status(plan_finish_date,parking_id,status,site_id) values
+        <foreach collection="list" separator="," item="item">
+            (#{item.planFinishDate},#{item.parkingId},#{item.status},#{item.siteId})
+        </foreach>
+    </insert>
+
+
+
+
+
+</mapper>

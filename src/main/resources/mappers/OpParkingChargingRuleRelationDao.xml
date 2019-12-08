@@ -17,4 +17,13 @@
         </foreach>
     </insert>
 
+    <select id="getRuleIdByName" resultType="int">
+        select id from t_op_charging_rule where `name` = #{name}
+    </select>
+
+    <!-- int (@Param("name")String name); -->
+    <select id="getParkingIdByName" resultType="int">
+        select id from t_op_parking where `name` = #{name}
+    </select>
+
 </mapper>

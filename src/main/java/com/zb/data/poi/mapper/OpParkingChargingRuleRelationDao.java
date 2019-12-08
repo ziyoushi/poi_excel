@@ -18,4 +18,13 @@ import java.util.List;
 public interface OpParkingChargingRuleRelationDao extends BaseMapper<OpParkingChargingRuleRelationEntity> {
 	//批量添加parking-rule
     int batchAddRuleRelation(@Param("list") List<OpParkingChargingRuleRelationEntity> list);
+
+    //根据计费规则名查询id
+    int getRuleIdByName(@Param("name") String name);
+
+
+    //根据停车场名 查询id
+    int getParkingIdByName(@Param("name")String name);
+
+
 }

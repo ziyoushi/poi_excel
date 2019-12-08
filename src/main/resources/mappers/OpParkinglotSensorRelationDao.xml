@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.zb.data.poi.mapper.OpParkinglotSensorRelationDao">
+
+	<!-- 可根据自己的需求，是否要使用 -->
+    <resultMap type="com.zb.data.poi.entity.OpParkinglotSensorRelationEntity" id="opParkinglotSensorRelationMap">
+        <result property="parkinglotId" column="parkinglot_id"/>
+        <result property="sensorCode" column="sensor_code"/>
+    </resultMap>
+
+    <!-- int (@Param("list") List<OpParkinglotSensorRelationEntity> list); -->
+    <insert id="batchAddSenorRelation" >
+        insert  into `t_op_parkinglot_sensor_relation`(`parkinglot_id`,`sensor_code`) values
+        <foreach collection="list" separator="," item="item">
+            (#{item.parkinglotId},#{item.sensorCode})
+        </foreach>
+    </insert>
+
+</mapper>

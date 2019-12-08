@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.zb.data.poi.mapper.OpRoadsegmentParkinglotRelationDao">
+
+	<!-- 可根据自己的需求，是否要使用 -->
+    <resultMap type="com.zb.data.poi.entity.OpRoadsegmentParkinglotRelationEntity" id="opRoadsegmentParkinglotRelationMap">
+        <result property="roadSegmentId" column="road_segment_id"/>
+        <result property="parkinglotId" column="parkinglot_id"/>
+    </resultMap>
+
+    <!-- int (@Param("list") List<OpRoadsegmentParkinglotRelationEntity> list); -->
+
+    <insert id="batchAddRoadParkingLotRelation" >
+        INSERT  INTO `t_op_roadsegment_parkinglot_relation`(`road_segment_id`,`parkinglot_id`) VALUES
+        <foreach collection="list" separator="," item="item">
+            (#{item.roadSegmentId},#{item.parkinglotId})
+        </foreach>
+    </insert>
+
+</mapper>

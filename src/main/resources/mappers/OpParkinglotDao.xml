@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.zb.data.poi.mapper.OpParkinglotDao">
+
+	<!-- 可根据自己的需求，是否要使用 -->
+    <resultMap type="com.zb.data.poi.entity.OpParkinglotEntity" id="opParkinglotMap">
+        <result property="id" column="id"/>
+        <result property="siteId" column="site_id"/>
+        <result property="parkingId" column="parking_id"/>
+        <result property="roadsegmentId" column="roadsegment_id"/>
+        <result property="code" column="code"/>
+        <result property="coordinate" column="coordinate"/>
+        <result property="isInvalidate" column="is_invalidate"/>
+    </resultMap>
+
+    <!-- int (@Param("list") List<OpParkinglotEntity> list); -->
+    <insert id="batchAddParkingLot" >
+        insert  into `t_op_parkinglot`(`site_id`,`parking_id`,`roadsegment_id`,`code`,`is_invalidate`) values
+        <foreach collection="list" item="item" separator=",">
+            (#{item.siteId},#{item.parkingId},#{item.roadsegmentId},#{item.code},#{item.isInvalidate})
+        </foreach>
+    </insert>
+
+
+    <!-- 查询停车泊位id  t_op_parkinglot-->
+    <select id="getParkingLotIdByCondition" resultType="int">
+        SELECT l.`id`
+        FROM t_op_parkinglot l
+        INNER JOIN t_op_road_segment ro
+        ON l.`roadsegment_id` = ro.`id`
+        INNER JOIN `t_op_parking_roadsegment_relation` rp
+        ON ro.`id` = rp.`road_segment_id`
+        INNER JOIN t_op_parking p
+        ON rp.`parking_id` = p.`id`
+        WHERE l.`code` = #{code}
+        AND ro.`name` = #{roadName}
+        AND p.name = #{parkingName}
+    </select>
+
+
+</mapper>

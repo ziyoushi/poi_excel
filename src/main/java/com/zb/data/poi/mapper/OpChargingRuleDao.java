@@ -18,5 +18,8 @@ import java.util.List;
 public interface OpChargingRuleDao extends BaseMapper<OpChargingRuleEntity> {
     //批量更新计费规则
     int batchAddCharging(@Param("list") List<OpChargingRuleEntity> list);
+
+
+
 	
 }

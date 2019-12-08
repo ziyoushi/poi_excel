@@ -2,6 +2,7 @@ package com.zb.data.poi;
 
 import com.zb.data.poi.entity.*;
 import com.zb.data.poi.mapper.*;
+import org.apache.poi.hssf.usermodel.HSSFDateUtil;
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
@@ -40,6 +41,21 @@ public class PoiApplicationTests {
 
     @Autowired
     private OpParkingChargingRuleRelationDao ruleRelationDao;
+
+    @Autowired
+    private OpRoadsegmentParkinglotRelationDao roadsegmentParkinglotRelationDao;
+
+    @Autowired
+    private OpParkinglotDao opParkinglotDao;
+
+    @Autowired
+    private OpParkinglotSensorRelationDao sensorRelationDao;
+
+    @Autowired
+    private OpParkingDao parkingDao;
+
+    @Autowired
+    private OpConstructionStatusDao constructionStatusDao;
 
     @Test
     public void testQueryAll(){
@@ -97,7 +113,7 @@ public class PoiApplicationTests {
 
     @Test
     public void testAddChargeRule() throws Exception{
-        InputStream is = new FileInputStream("d:/excel-poi/data-rule-btp.xlsx");
+        InputStream is = new FileInputStream("d:/excel-poi/sourceData/data-rule.xlsx");
 
         Workbook workbook = new XSSFWorkbook(is);
         Sheet sheet = workbook.getSheetAt(0);
@@ -137,8 +153,8 @@ public class PoiApplicationTests {
                 ruleEntity.setSiteId(1);
                 ruleEntity.setEffectiveType("001");
                 ruleEntity.setEffectiveTime(null);
-                ruleEntity.setEffectiveStatus("002");
-                ruleEntity.setVersion("1.0");
+                ruleEntity.setEffectiveStatus("001");
+                ruleEntity.setVersion("--");
                 ruleEntity.setReleaseStatus("001");
                 ruleEntity.setReleaseErrorReason(null);
                 ruleEntity.setStatus("001");
@@ -172,6 +188,16 @@ public class PoiApplicationTests {
 
                     btp.setChargingRuleBtpId(ruleId);
                     btp.setSiteId(1);
+                    String timeType = rowData.getCell(8).toString();
+                    switch (timeType){
+                        case "时间段":
+                            btp.setType("001");
+                            break;
+                        case "间隔":
+                            btp.setType("002");
+                            break;
+                    }
+
                     btp.setType("001");
                     btp.setPeriodNo(1);
                     //数量
@@ -206,7 +232,15 @@ public class PoiApplicationTests {
                     OpChargingRuleBtpStdEntity btp = new OpChargingRuleBtpStdEntity();
                     btp.setSiteId(1);
                     btp.setChargingRuleBtpId(ruleId);
-                    btp.setType("001");
+                    String timeType = rowData.getCell(12).toString();
+                    switch (timeType){
+                        case "时间段":
+                            btp.setType("001");
+                            break;
+                        case "间隔":
+                            btp.setType("002");
+                            break;
+                    }
                     btp.setPeriodNo(2);
                     //数量
                     String s1 = rowData.getCell(13).toString();
@@ -240,7 +274,15 @@ public class PoiApplicationTests {
                     OpChargingRuleBtpStdEntity btp = new OpChargingRuleBtpStdEntity();
                     btp.setSiteId(1);
                     btp.setChargingRuleBtpId(ruleId);
-                    btp.setType("001");
+                    String timeType = rowData.getCell(16).toString();
+                    switch (timeType){
+                        case "时间段":
+                            btp.setType("001");
+                            break;
+                        case "间隔":
+                            btp.setType("002");
+                            break;
+                    }
                     btp.setPeriodNo(3);
                     //数量
                     String s1 = rowData.getCell(17).toString();
@@ -286,7 +328,7 @@ public class PoiApplicationTests {
     @Test
     public void testAddRuleParking() throws Exception {
 
-        InputStream is = new FileInputStream("d:/excel-poi/data-rule-parking.xlsx");
+        InputStream is = new FileInputStream("d:/excel-poi/sourceData/data-rule-parking-new.xlsx");
 
         Workbook workbook = new XSSFWorkbook(is);
         Sheet sheet = workbook.getSheetAt(0);
@@ -302,15 +344,26 @@ public class PoiApplicationTests {
             if (rowData != null) {// 行不为空
                 // 读取cell
                 OpParkingChargingRuleRelationEntity relationEntity = new OpParkingChargingRuleRelationEntity();
-                String str1 = rowData.getCell(2).toString();
-                String[] split1 = str1.split("\\.");
-                relationEntity.setParkingId(Integer.parseInt(split1[0]));
+                String parkingName = rowData.getCell(1).toString();
+                int parkingId = 0;
+                if (parkingName !=null){
+                    parkingId = ruleRelationDao.getParkingIdByName(parkingName)==0?0:ruleRelationDao.getParkingIdByName(parkingName);
+                    if (parkingId >0){
+                        relationEntity.setParkingId(parkingId);
+                    }
 
-                String str2 = rowData.getCell(4).toString();
-                String[] split2 = str2.split("\\.");
-                relationEntity.setChargingRuleId(Integer.parseInt(split2[0]));
+                }
 
-                list.add(relationEntity);
+                String ruleName = rowData.getCell(2).toString();
+                int ruleId = 0;
+                if (ruleName != null){
+                    ruleId = ruleRelationDao.getRuleIdByName(ruleName);
+                    relationEntity.setChargingRuleId(ruleId);
+                }
+                if ( parkingId >0 && ruleId >0){
+                    list.add(relationEntity);
+                }
+
             }
 
         }
@@ -318,5 +371,275 @@ public class PoiApplicationTests {
         ruleRelationDao.batchAddRuleRelation(list);
 
     }
+
+    @Test
+    public void testAddRoadParkingLotRelation() throws Exception {
+
+        InputStream is = new FileInputStream("d:/excel-poi/data-parkinglot.xlsx");
+
+        Workbook workbook = new XSSFWorkbook(is);
+        Sheet sheet = workbook.getSheetAt(0);
+
+        // 读取标题所有内容
+
+        //List<DemoData> list = new ArrayList<>();
+        List<OpRoadsegmentParkinglotRelationEntity> list = new ArrayList<>();
+        // 读取商品列表数据 从第一行开始读取
+        int rowCount = sheet.getPhysicalNumberOfRows();
+        for (int rowNum = 1; rowNum < rowCount -1; rowNum++) {
+            Row rowData = sheet.getRow(rowNum);
+            if (rowData != null) {// 行不为空
+                // 读取cell
+                OpRoadsegmentParkinglotRelationEntity relationEntity = new OpRoadsegmentParkinglotRelationEntity();
+                String str1 = rowData.getCell(0).toString();
+                String[] split1 = str1.split("\\.");
+                relationEntity.setParkinglotId(Integer.parseInt(split1[0]));
+
+                String str2 = rowData.getCell(4).toString();
+                String[] split2 = str2.split("\\.");
+                relationEntity.setRoadSegmentId(Integer.parseInt(split2[0]));
+
+                list.add(relationEntity);
+            }
+
+        }
+        System.out.println(list);
+        roadsegmentParkinglotRelationDao.batchAddRoadParkingLotRelation(list);
+
+    }
+
+    //添加车位信息
+    @Test
+    public void testAddParkingLot() throws Exception {
+
+        InputStream is = new FileInputStream("d:/excel-poi/data-parkinglot.xlsx");
+
+        Workbook workbook = new XSSFWorkbook(is);
+        Sheet sheet = workbook.getSheetAt(0);
+
+        // 读取标题所有内容
+
+        //List<DemoData> list = new ArrayList<>();
+        List<OpParkinglotEntity> list = new ArrayList<>();
+        // 读取商品列表数据 从第一行开始读取
+        int rowCount = sheet.getPhysicalNumberOfRows();
+        for (int rowNum = 1; rowNum < rowCount -1; rowNum++) {
+            Row rowData = sheet.getRow(rowNum);
+            if (rowData != null) {// 行不为空
+                // 读取cell
+                OpParkinglotEntity parkingLot = new OpParkinglotEntity();
+                String str1 = rowData.getCell(2).toString();
+                String[] split1 = str1.split("\\.");
+                parkingLot.setParkingId(Integer.parseInt(split1[0]));
+
+                String code = rowData.getCell(4).toString();
+                parkingLot.setCode(code);
+                parkingLot.setIsInvalidate("001");
+                parkingLot.setSiteId(1);
+
+                String str2 = rowData.getCell(5).toString();
+                String[] split2 = str2.split("\\.");
+                parkingLot.setRoadsegmentId(Integer.parseInt(split2[0]));
+
+                list.add(parkingLot);
+            }
+
+        }
+        System.out.println(list);
+        opParkinglotDao.batchAddParkingLot(list);
+
+    }
+
+    //地磁 code
+    @Test
+    public void testAddParkingLotSenorRelation() throws Exception {
+
+        InputStream is = new FileInputStream("d:/excel-poi/sourceData/data-parking-senor.xlsx");
+
+        Workbook workbook = new XSSFWorkbook(is);
+        Sheet sheet = workbook.getSheetAt(0);
+
+        // 读取标题所有内容
+
+        //List<DemoData> list = new ArrayList<>();
+        List<OpParkinglotSensorRelationEntity> list = new ArrayList<>();
+        // 读取商品列表数据 从第一行开始读取
+        int rowCount = sheet.getPhysicalNumberOfRows();
+        for (int rowNum = 1; rowNum < 633; rowNum++) {
+            Row rowData = sheet.getRow(rowNum);
+            if (rowData != null) {// 行不为空
+                // 读取cell
+                OpParkinglotSensorRelationEntity relationEntity = new OpParkinglotSensorRelationEntity();
+                String parkingName = rowData.getCell(0).toString();
+
+                String roadName = rowData.getCell(1).toString();
+                String code = rowData.getCell(2).toString();
+
+                //地磁编号
+                String senorCode = rowData.getCell(3).toString();
+                relationEntity.setSensorCode(senorCode);
+
+                int parkingLotId = opParkinglotDao.getParkingLotIdByCondition(code,roadName,parkingName);
+                relationEntity.setParkinglotId(parkingLotId);
+
+                list.add(relationEntity);
+            }
+
+        }
+        System.out.println(list);
+        sensorRelationDao.batchAddSenorRelation(list);
+
+    }
+
+
+    //修改停车场经纬度
+    @Test
+    public void testUpdateParking() throws Exception {
+
+        InputStream is = new FileInputStream("d:/excel-poi/sourceData/data-parking.xlsx");
+
+        Workbook workbook = new XSSFWorkbook(is);
+        Sheet sheet = workbook.getSheetAt(0);
+
+        // 读取标题所有内容
+
+        //List<DemoData> list = new ArrayList<>();
+        //List<OpParkinglotEntity> list = new ArrayList<>();
+        List<OpParkingEntity> list = new ArrayList<>();
+        // 读取商品列表数据 从第一行开始读取
+        int rowCount = sheet.getPhysicalNumberOfRows();
+        for (int rowNum = 1; rowNum < 86; rowNum++) {
+            Row rowData = sheet.getRow(rowNum);
+            if (rowData != null) {// 行不为空
+                // 读取cell
+                OpParkingEntity parking = new OpParkingEntity();
+                String coordinate = rowData.getCell(5).toString();
+                if (coordinate != null && coordinate != ""){
+                    parking.setCoordinate(coordinate);
+                }else {
+                    break;
+                }
+
+                String name = rowData.getCell(1).toString();
+                if (name != null && name != ""){
+                    parking.setName(name);
+                }else {
+                    break;
+                }
+                list.add(parking);
+
+                /*if (coordinate != null && name != null){
+                    parking.setCoordinate(coordinate);
+                    parking.setName(name);
+                    int i = parkingDao.updateParking(coordinate, name);
+                    System.out.println("执行结果"+i);
+
+                }*/
+
+            }
+
+        }
+        //System.out.println(list);
+        //opParkinglotDao.batchAddParkingLot(list);
+        if(list != null && list.size() >0){
+            parkingDao.batchUpdateParking(list);
+        }
+
+
+    }
+
+    //更新construction
+    @Test
+    public void testUpdateConstruction() throws Exception {
+
+        InputStream is = new FileInputStream("d:/excel-poi/sourceData/data-time.xlsx");
+
+        Workbook workbook = new XSSFWorkbook(is);
+        Sheet sheet = workbook.getSheetAt(0);
+
+        // 读取标题所有内容
+
+        //List<DemoData> list = new ArrayList<>();
+        //List<OpParkinglotEntity> list = new ArrayList<>();
+        List<OpConstructionStatusEntity> list = new ArrayList<>();
+        // 读取商品列表数据 从第一行开始读取
+        int rowCount = sheet.getPhysicalNumberOfRows();
+        for (int rowNum = 1; rowNum < 85; rowNum++) {
+            Row rowData = sheet.getRow(rowNum);
+            if (rowData != null) {// 行不为空
+
+
+                for (int i = 1;i<=6;i++){
+                    // 读取cell
+                    OpConstructionStatusEntity construction = new OpConstructionStatusEntity();
+                    //SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
+                    String name = rowData.getCell(0).toString();
+
+                    int parkingId = parkingDao.getParkingIdByName(name);
+
+                    Cell c1 = rowData.getCell(1);
+
+                    if (HSSFDateUtil.isCellDateFormatted(c1)) {//日期
+                        System.out.print("【日期】");
+                        Date date = c1.getDateCellValue();
+                        construction.setPlanFinishDate(new DateTime(date).toString("yyyy-MM-dd"));
+                        construction.setActualFinishDate(new DateTime(date).toString("yyyy-MM-dd"));
+                    }
+                    if (parkingId != 0){
+                        construction.setParkingId(parkingId);
+                    }
+
+                    construction.setSiteId(1);
+                    switch (i){
+                        case 1:
+                            construction.setStatus("001");
+                            break;
+                        case 2:
+                            construction.setStatus("002");
+                            break;
+                        case 3:
+                            construction.setStatus("003");
+                            break;
+                        case 4:
+                            construction.setStatus("004");
+                            break;
+                        case 5:
+                            construction.setStatus("005");
+                            break;
+                        case 6:
+                            construction.setStatus("006");
+                            break;
+
+                    }
+
+                    list.add(construction);
+
+
+                }
+
+
+                /*Cell c2 = rowData.getCell(2);
+                if (HSSFDateUtil.isCellDateFormatted(c2)) {//日期
+                    System.out.print("【日期】");
+                    Date date = c2.getDateCellValue();
+                    construction.setActualFinishDate(new DateTime(date).toString("yyyy-MM-dd"));
+                }*/
+
+
+
+            }
+
+        }
+        //System.out.println(list);
+        //opParkinglotDao.batchAddParkingLot(list);
+        if(list != null && list.size() >0){
+            constructionStatusDao.batchAddConstruction(list);
+        }
+
+
+    }
+
+
+
 
 }
