@@ -58,10 +58,22 @@
 
     </update>
 
-    <!--  -->
+    <!-- 根据name查询id -->
     <select id="getParkingIdByName" resultType="int">
         select id from t_op_parking where `name` = #{name}
     </select>
 
+    <resultMap id="parking_model_resultMap" type="com.zb.data.poi.model.ParkingModel">
+        <result column="id" property="id"/>
+        <result column="code" property="code"/>
+    </resultMap>
+
+    <!-- 根据停车场名查询对应的code id -->
+    <select id="queryParkingModeByName" resultMap="parking_model_resultMap" >
+        select id,code from t_op_parking where
+         <if test="name != null and name != ''">
+             `name` = #{name}
+         </if>
+    </select>
 
 </mapper>

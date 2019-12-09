@@ -3,6 +3,7 @@ package com.zb.data.poi.mapper;
 
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.zb.data.poi.entity.OpParkingEntity;
+import com.zb.data.poi.model.ParkingModel;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 
@@ -23,5 +24,8 @@ public interface OpParkingDao extends BaseMapper<OpParkingEntity> {
     int batchUpdateParking(@Param("list") List<OpParkingEntity> list);
 
     int getParkingIdByName(@Param("name") String name);
+
+    /* 根据停车场名查询id code */
+    List<ParkingModel> queryParkingModeByName(@Param("name") String name);
 
 }

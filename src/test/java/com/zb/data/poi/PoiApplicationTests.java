@@ -2,6 +2,7 @@ package com.zb.data.poi;
 
 import com.zb.data.poi.entity.*;
 import com.zb.data.poi.mapper.*;
+import com.zb.data.poi.model.ParkingModel;
 import org.apache.poi.hssf.usermodel.HSSFDateUtil;
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.Row;
@@ -14,6 +15,7 @@ import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit4.SpringRunner;
+import org.springframework.util.CollectionUtils;
 
 import java.io.FileInputStream;
 import java.io.InputStream;
@@ -57,8 +59,14 @@ public class PoiApplicationTests {
     @Autowired
     private OpConstructionStatusDao constructionStatusDao;
 
+    @Autowired
+    private OpSeedUserDao seedUserDao;
+
+    @Autowired
+    private OpUserParkingDao opUserParkingDao;
+
     @Test
-    public void testQueryAll(){
+    public void testQueryAll() {
         List<DemoData> demoData = demoDataMapper.queryAll();
         System.out.println(demoData);
     }
@@ -112,7 +120,7 @@ public class PoiApplicationTests {
     }
 
     @Test
-    public void testAddChargeRule() throws Exception{
+    public void testAddChargeRule() throws Exception {
         InputStream is = new FileInputStream("d:/excel-poi/sourceData/data-rule.xlsx");
 
         Workbook workbook = new XSSFWorkbook(is);
@@ -124,7 +132,7 @@ public class PoiApplicationTests {
         List<OpChargingRuleBtpStdEntity> btpList = new ArrayList<>();
         // 读取商品列表数据 从第一行开始读取
         int rowCount = sheet.getPhysicalNumberOfRows();
-        for (int rowNum = 2; rowNum < rowCount -1; rowNum++) {
+        for (int rowNum = 2; rowNum < rowCount - 1; rowNum++) {
             Row rowData = sheet.getRow(rowNum);
             if (rowData != null) {// 行不为空
                 //DemoData demoData = new DemoData();
@@ -183,13 +191,13 @@ public class PoiApplicationTests {
 
                 Cell cell = rowData.getCell(8);
 
-                if (cell != null){
+                if (cell != null) {
                     OpChargingRuleBtpStdEntity btp = new OpChargingRuleBtpStdEntity();
 
                     btp.setChargingRuleBtpId(ruleId);
                     btp.setSiteId(1);
                     String timeType = rowData.getCell(8).toString();
-                    switch (timeType){
+                    switch (timeType) {
                         case "时间段":
                             btp.setType("001");
                             break;
@@ -208,7 +216,7 @@ public class PoiApplicationTests {
                     btp.setPeriodName("第一阶段收费标准");
                     //1. 小时 2. 半小时  3. 一刻钟
                     String str = rowData.getCell(10).toString();
-                    switch (str){
+                    switch (str) {
                         case "/半小时":
                             btp.setTimeIntervalType("002");
                             break;
@@ -227,13 +235,13 @@ public class PoiApplicationTests {
                 }
 
                 Cell c2 = rowData.getCell(12);
-                if (c2 != null){
+                if (c2 != null) {
 
                     OpChargingRuleBtpStdEntity btp = new OpChargingRuleBtpStdEntity();
                     btp.setSiteId(1);
                     btp.setChargingRuleBtpId(ruleId);
                     String timeType = rowData.getCell(12).toString();
-                    switch (timeType){
+                    switch (timeType) {
                         case "时间段":
                             btp.setType("001");
                             break;
@@ -251,7 +259,7 @@ public class PoiApplicationTests {
                     //1. 小时 2. 半小时  3. 一刻钟
                     //btp.setTimeIntervalType("001");
                     String str = rowData.getCell(14).toString();
-                    switch (str){
+                    switch (str) {
                         case "/半小时":
                             btp.setTimeIntervalType("002");
                             break;
@@ -270,12 +278,12 @@ public class PoiApplicationTests {
                 }
 
                 Cell c3 = rowData.getCell(16);
-                if (c3 != null){
+                if (c3 != null) {
                     OpChargingRuleBtpStdEntity btp = new OpChargingRuleBtpStdEntity();
                     btp.setSiteId(1);
                     btp.setChargingRuleBtpId(ruleId);
                     String timeType = rowData.getCell(16).toString();
-                    switch (timeType){
+                    switch (timeType) {
                         case "时间段":
                             btp.setType("001");
                             break;
@@ -293,7 +301,7 @@ public class PoiApplicationTests {
                     //1. 小时 2. 半小时  3. 一刻钟
                     //btp.setTimeIntervalType("001");
                     String str = rowData.getCell(18).toString();
-                    switch (str){
+                    switch (str) {
                         case "/半小时":
                             btp.setTimeIntervalType("002");
                             break;
@@ -339,16 +347,16 @@ public class PoiApplicationTests {
         List<OpParkingChargingRuleRelationEntity> list = new ArrayList<>();
         // 读取商品列表数据 从第一行开始读取
         int rowCount = sheet.getPhysicalNumberOfRows();
-        for (int rowNum = 1; rowNum < rowCount -1; rowNum++) {
+        for (int rowNum = 1; rowNum < rowCount - 1; rowNum++) {
             Row rowData = sheet.getRow(rowNum);
             if (rowData != null) {// 行不为空
                 // 读取cell
                 OpParkingChargingRuleRelationEntity relationEntity = new OpParkingChargingRuleRelationEntity();
                 String parkingName = rowData.getCell(1).toString();
                 int parkingId = 0;
-                if (parkingName !=null){
-                    parkingId = ruleRelationDao.getParkingIdByName(parkingName)==0?0:ruleRelationDao.getParkingIdByName(parkingName);
-                    if (parkingId >0){
+                if (parkingName != null) {
+                    parkingId = ruleRelationDao.getParkingIdByName(parkingName) == 0 ? 0 : ruleRelationDao.getParkingIdByName(parkingName);
+                    if (parkingId > 0) {
                         relationEntity.setParkingId(parkingId);
                     }
 
@@ -356,11 +364,11 @@ public class PoiApplicationTests {
 
                 String ruleName = rowData.getCell(2).toString();
                 int ruleId = 0;
-                if (ruleName != null){
+                if (ruleName != null) {
                     ruleId = ruleRelationDao.getRuleIdByName(ruleName);
                     relationEntity.setChargingRuleId(ruleId);
                 }
-                if ( parkingId >0 && ruleId >0){
+                if (parkingId > 0 && ruleId > 0) {
                     list.add(relationEntity);
                 }
 
@@ -386,7 +394,7 @@ public class PoiApplicationTests {
         List<OpRoadsegmentParkinglotRelationEntity> list = new ArrayList<>();
         // 读取商品列表数据 从第一行开始读取
         int rowCount = sheet.getPhysicalNumberOfRows();
-        for (int rowNum = 1; rowNum < rowCount -1; rowNum++) {
+        for (int rowNum = 1; rowNum < rowCount - 1; rowNum++) {
             Row rowData = sheet.getRow(rowNum);
             if (rowData != null) {// 行不为空
                 // 读取cell
@@ -423,7 +431,7 @@ public class PoiApplicationTests {
         List<OpParkinglotEntity> list = new ArrayList<>();
         // 读取商品列表数据 从第一行开始读取
         int rowCount = sheet.getPhysicalNumberOfRows();
-        for (int rowNum = 1; rowNum < rowCount -1; rowNum++) {
+        for (int rowNum = 1; rowNum < rowCount - 1; rowNum++) {
             Row rowData = sheet.getRow(rowNum);
             if (rowData != null) {// 行不为空
                 // 读取cell
@@ -479,7 +487,7 @@ public class PoiApplicationTests {
                 String senorCode = rowData.getCell(3).toString();
                 relationEntity.setSensorCode(senorCode);
 
-                int parkingLotId = opParkinglotDao.getParkingLotIdByCondition(code,roadName,parkingName);
+                int parkingLotId = opParkinglotDao.getParkingLotIdByCondition(code, roadName, parkingName);
                 relationEntity.setParkinglotId(parkingLotId);
 
                 list.add(relationEntity);
@@ -514,34 +522,26 @@ public class PoiApplicationTests {
                 // 读取cell
                 OpParkingEntity parking = new OpParkingEntity();
                 String coordinate = rowData.getCell(5).toString();
-                if (coordinate != null && coordinate != ""){
+                if (coordinate != null && coordinate != "") {
                     parking.setCoordinate(coordinate);
-                }else {
+                } else {
                     break;
                 }
 
                 String name = rowData.getCell(1).toString();
-                if (name != null && name != ""){
+                if (name != null && name != "") {
                     parking.setName(name);
-                }else {
+                } else {
                     break;
                 }
                 list.add(parking);
-
-                /*if (coordinate != null && name != null){
-                    parking.setCoordinate(coordinate);
-                    parking.setName(name);
-                    int i = parkingDao.updateParking(coordinate, name);
-                    System.out.println("执行结果"+i);
-
-                }*/
 
             }
 
         }
         //System.out.println(list);
         //opParkinglotDao.batchAddParkingLot(list);
-        if(list != null && list.size() >0){
+        if (list != null && list.size() > 0) {
             parkingDao.batchUpdateParking(list);
         }
 
@@ -559,6 +559,8 @@ public class PoiApplicationTests {
 
         // 读取标题所有内容
 
+        List<OpUserParkingEntity> userParkingList = new ArrayList<>();
+        List<OpSeedUserEntity> seedUserList = new ArrayList<>();
         //List<DemoData> list = new ArrayList<>();
         //List<OpParkinglotEntity> list = new ArrayList<>();
         List<OpConstructionStatusEntity> list = new ArrayList<>();
@@ -568,63 +570,94 @@ public class PoiApplicationTests {
             Row rowData = sheet.getRow(rowNum);
             if (rowData != null) {// 行不为空
 
+                OpSeedUserEntity seedUser = new OpSeedUserEntity();
 
-                for (int i = 1;i<=6;i++){
-                    // 读取cell
-                    OpConstructionStatusEntity construction = new OpConstructionStatusEntity();
-                    //SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
-                    String name = rowData.getCell(0).toString();
+                // 读取cell
+                OpConstructionStatusEntity construction = new OpConstructionStatusEntity();
+                //SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
+                String name = rowData.getCell(0).toString();
 
-                    int parkingId = parkingDao.getParkingIdByName(name);
+                int parkingId = parkingDao.getParkingIdByName(name);
 
-                    Cell c1 = rowData.getCell(1);
+                Cell c1 = rowData.getCell(1);
 
-                    if (HSSFDateUtil.isCellDateFormatted(c1)) {//日期
-                        System.out.print("【日期】");
-                        Date date = c1.getDateCellValue();
-                        construction.setPlanFinishDate(new DateTime(date).toString("yyyy-MM-dd"));
-                        construction.setActualFinishDate(new DateTime(date).toString("yyyy-MM-dd"));
-                    }
-                    if (parkingId != 0){
-                        construction.setParkingId(parkingId);
-                    }
-
-                    construction.setSiteId(1);
-                    switch (i){
-                        case 1:
-                            construction.setStatus("001");
-                            break;
-                        case 2:
-                            construction.setStatus("002");
-                            break;
-                        case 3:
-                            construction.setStatus("003");
-                            break;
-                        case 4:
-                            construction.setStatus("004");
-                            break;
-                        case 5:
-                            construction.setStatus("005");
-                            break;
-                        case 6:
-                            construction.setStatus("006");
-                            break;
-
-                    }
-
-                    list.add(construction);
-
-
+                if (HSSFDateUtil.isCellDateFormatted(c1)) {//日期
+                    System.out.print("【日期】");
+                    Date date = c1.getDateCellValue();
+                    construction.setPlanFinishDate(new DateTime(date).toString("yyyy-MM-dd"));
+                    construction.setActualFinishDate(new DateTime(date).toString("yyyy-MM-dd"));
+                }
+                if (parkingId != 0) {
+                    construction.setParkingId(parkingId);
                 }
 
+                construction.setSiteId(1);
 
-                /*Cell c2 = rowData.getCell(2);
-                if (HSSFDateUtil.isCellDateFormatted(c2)) {//日期
-                    System.out.print("【日期】");
-                    Date date = c2.getDateCellValue();
-                    construction.setActualFinishDate(new DateTime(date).toString("yyyy-MM-dd"));
-                }*/
+                String ownerName = rowData.getCell(1).toString();
+                seedUser.setCarownerName(ownerName);
+                String mobile = rowData.getCell(2).toString();
+                seedUser.setContactMobile(mobile);
+                String seedUserType = rowData.getCell(5).toString();
+                switch (seedUserType){
+                    case "VIP用户":
+                        seedUser.setSeedUserType("003");
+                        break;
+                    case "种子用户":
+                        seedUser.setSeedUserType("002");
+                        break;
+                }
+                String plateNo = rowData.getCell(7).toString();
+                seedUser.setCarPlateNo(plateNo);
+                String parkingName = rowData.getCell(8).toString();
+                List<ParkingModel> parkingList = new ArrayList<>();
+                if ("全部".equals(parkingName)){
+                    parkingList  = parkingDao.queryParkingModeByName(null);
+                }else {
+                    parkingList =  parkingDao.queryParkingModeByName(parkingName);
+                }
+                if (!CollectionUtils.isEmpty(parkingList)){
+                    for (ParkingModel parkingModel : parkingList) {
+                        OpUserParkingEntity userParkingEntity = new OpUserParkingEntity();
+                        userParkingEntity.setCarPlateNo(plateNo);
+                        userParkingEntity.setParkingNo(parkingModel.getCode());
+                        userParkingEntity.setParkingId(parkingModel.getId());
+                        userParkingEntity.setSendStatus("001");
+                        userParkingEntity.setStatus("1");
+                        userParkingEntity.setCreateDatetime(new Date());
+                        userParkingEntity.setUpdateDatetime(new Date());
 
+                    }
+                }
+
+                seedUser.setSiteId(1);
+                //车牌颜色
+                String color = rowData.getCell(6).toString();
+                /**
+                 * 001       蓝牌
+                 * 002       黄牌
+                 * 003       绿牌
+                 * 004       白牌
+                 * 005       其他
+                 */
+                switch (color) {
+                    case "蓝牌":
+                        seedUser.setCarPlateColor("001");
+                        break;
+                    case "黄牌":
+                        seedUser.setCarPlateColor("002");
+                        break;
+                    case "绿牌":
+                        seedUser.setCarPlateColor("003");
+                        break;
+                    case "白牌":
+                        seedUser.setCarPlateColor("004");
+                        break;
+                    case "其他":
+                        seedUser.setCarPlateColor("005");
+                        break;
+                }
+
+                list.add(construction);
 
 
             }
@@ -632,7 +665,7 @@ public class PoiApplicationTests {
         }
         //System.out.println(list);
         //opParkinglotDao.batchAddParkingLot(list);
-        if(list != null && list.size() >0){
+        if (list != null && list.size() > 0) {
             constructionStatusDao.batchAddConstruction(list);
         }
 
@@ -640,6 +673,143 @@ public class PoiApplicationTests {
     }
 
 
+    //批量添加种子用户
+    @Test
+    public void testBatchAddSeedUser() throws Exception {
+
+        InputStream is = new FileInputStream("d:/excel-poi/sourceData/seed-user-3.xlsx");
+
+        Workbook workbook = new XSSFWorkbook(is);
+        Sheet sheet = workbook.getSheetAt(0);
+
+        // 读取标题所有内容
+
+        //List<DemoData> list = new ArrayList<>();
+        //List<OpParkinglotEntity> list = new ArrayList<>();
+        List<OpParkingEntity> list = new ArrayList<>();
+        List<OpUserParkingEntity> userParkingList = new ArrayList<>();
+        List<OpSeedUserEntity> seedUserList = new ArrayList<>();
+        // 读取商品列表数据 从第一行开始读取
+        int rowCount = sheet.getPhysicalNumberOfRows();
+        for (int rowNum = 292; rowNum < 504; rowNum++) {
+            Row rowData = sheet.getRow(rowNum);
+            if (rowData != null) {// 行不为空
+
+                OpSeedUserEntity seedUser = new OpSeedUserEntity();
+
+                // 读取cell
+                //OpConstructionStatusEntity construction = new OpConstructionStatusEntity();
+                //SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
+                //停车场name
+                String name = rowData.getCell(8).toString();
+                //String name = rowData.getCell(8).toString();
+                int parkingId = parkingDao.getParkingIdByName(name);
+
+                //Cell c3 = rowData.getCell(3);
+                String startDate = rowData.getCell(3).toString();
+                /*if (HSSFDateUtil.isCellDateFormatted(c3)) {//日期
+                    System.out.print("【日期】");
+                    Date date = c3.getDateCellValue();
+                    startDate = new DateTime(date).toString("yyyy-MM-dd");
+                }*/
+                String endDate = rowData.getCell(4).toString();
+                //Cell c4 = rowData.getCell(4);
+                /*if (HSSFDateUtil.isCellDateFormatted(c4)) {//日期
+                    System.out.print("【日期】");
+                    Date date = c4.getDateCellValue();
+                    endDate = new DateTime(date).toString("yyyy-MM-dd");
+                }*/
+
+                String num = rowData.getCell(0).toString();
+
+                String[] split = num.split("\\.");
+                String seedUserId = split[0];
+                seedUser.setSiteId(1);
+
+                String ownerName = rowData.getCell(1).toString();
+                seedUser.setCarownerName(ownerName);
+                String mobile = rowData.getCell(2).toString();
+                String[] split1 = mobile.split("\\.");
+                seedUser.setContactMobile(split1[0]);
+                String seedUserType = rowData.getCell(5).toString();
+                switch (seedUserType){
+                    case "VIP用户":
+                        seedUser.setSeedUserType("003");
+                        break;
+                    case "种子用户":
+                        seedUser.setSeedUserType("002");
+                        break;
+                }
+                String plateNo = rowData.getCell(7).toString();
+                seedUser.setCarPlateNo(plateNo);
+                String parkingName = rowData.getCell(8).toString();
+
+                List<ParkingModel> parkingList = new ArrayList<>();
+                if ("全部".equals(parkingName)){
+                    parkingList  = parkingDao.queryParkingModeByName(null);
+                }else {
+                    parkingList =  parkingDao.queryParkingModeByName(parkingName);
+                }
+                if (!CollectionUtils.isEmpty(parkingList)){
+                    for (ParkingModel parkingModel : parkingList) {
+                        OpUserParkingEntity userParkingEntity = new OpUserParkingEntity();
+                        userParkingEntity.setCarPlateNo(plateNo);
+                        userParkingEntity.setIsWhite(1);
+                        userParkingEntity.setParkingNo(parkingModel.getCode());
+                        userParkingEntity.setParkingId(parkingModel.getId());
+                        userParkingEntity.setSendStatus("001");
+                        userParkingEntity.setStatus("1");
+                        userParkingEntity.setCreateDatetime(new Date());
+                        userParkingEntity.setUpdateDatetime(new Date());
+                        userParkingEntity.setStartDate(startDate);
+                        userParkingEntity.setEndDate(endDate);
+                        userParkingEntity.setSeedUserId(Integer.parseInt(seedUserId));
+                        userParkingEntity.setParkingId(parkingId);
+                        userParkingList.add(userParkingEntity);
+                    }
+                }
+                //车牌颜色
+                String color = rowData.getCell(6).toString();
+                /**
+                 * 001       蓝牌
+                 * 002       黄牌
+                 * 003       绿牌
+                 * 004       白牌
+                 * 005       其他
+                 */
+                switch (color) {
+                    case "蓝牌":
+                        seedUser.setCarPlateColor("001");
+                        break;
+                    case "黄牌":
+                        seedUser.setCarPlateColor("002");
+                        break;
+                    case "绿牌":
+                        seedUser.setCarPlateColor("003");
+                        break;
+                    case "白牌":
+                        seedUser.setCarPlateColor("004");
+                        break;
+                    case "其他":
+                        seedUser.setCarPlateColor("005");
+                        break;
+                }
+                seedUserList.add(seedUser);
+
+            }
+
+        }
+
+        if (seedUserList != null && seedUserList.size() >0){
+            seedUserDao.batchAddSeedUser(seedUserList);
+        }
+
+        if (userParkingList != null && userParkingList.size() >0){
+            opUserParkingDao.batchAddUserParking(userParkingList);
+        }
+
+
+    }
 
 
 }

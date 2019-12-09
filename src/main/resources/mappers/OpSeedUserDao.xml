@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.zb.data.poi.mapper.OpSeedUserDao">
+
+	<!-- 可根据自己的需求，是否要使用 -->
+    <resultMap type="com.zb.data.poi.entity.OpSeedUserEntity" id="opSeedUserMap">
+        <result property="id" column="id"/>
+        <result property="siteId" column="site_id"/>
+        <result property="carownerName" column="carowner_name"/>
+        <result property="idCard" column="id_card"/>
+        <result property="carPlateColor" column="car_plate_color"/>
+        <result property="carPlateNo" column="car_plate_no"/>
+        <result property="contactMobile" column="contact_mobile"/>
+        <result property="contactAdrress" column="contact_adrress"/>
+        <result property="seedUserType" column="seed_user_type"/>
+        <result property="invalidateStatus" column="invalidate_status"/>
+        <result property="comments" column="comments"/>
+    </resultMap>
+
+    <!-- 批量更新种子用户 -->
+    <insert id="batchAddSeedUser">
+        INSERT  INTO `t_op_seed_user`(`site_id`,`carowner_name`,`car_plate_color`,`car_plate_no`,`contact_mobile`,`seed_user_type`,`invalidate_status`)
+        values
+        <foreach collection="list" item="item" separator=",">
+            (#{item.siteId},#{item.carownerName},#{item.carPlateColor},#{item.carPlateNo},#{item.contactMobile},#{item.seedUserType},#{item.invalidateStatus})
+        </foreach>
+    </insert>
+
+</mapper>
