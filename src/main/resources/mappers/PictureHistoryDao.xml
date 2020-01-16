@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.zb.data.poi.mapper.PictureHistoryMapper">
+
+    <resultMap id="pictureHistoryResultMap" type="com.zb.data.poi.entity.PictureHistoryEntity">
+        <result column="car_plate_no" property="carPlateNo"/>
+        <result column="parking_serial_no" property="parkingSerialNo"/>
+        <result column="pic_img_url" property="picImgUrl"/>
+        <result column="pic_datetime" property="picDatetime"/>
+    </resultMap>
+
+    <select id="getHistoryBySerialNo" resultMap="pictureHistoryResultMap">
+        select parking_serial_no,car_plate_no,pic_img_url,pic_datetime
+        from t_cw_picture_history
+        where parking_serial_no = #{serialNo}
+        order by pic_datetime desc
+        limit 1
+    </select>
+
+
+</mapper>

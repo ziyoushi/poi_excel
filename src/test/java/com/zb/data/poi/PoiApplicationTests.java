@@ -65,6 +65,12 @@ public class PoiApplicationTests {
     @Autowired
     private OpUserParkingDao opUserParkingDao;
 
+    @Autowired
+    private PictureHistoryMapper pictureHistoryMapper;
+
+    @Autowired
+    private FlowMapper flowMapper;
+
     @Test
     public void testQueryAll() {
         List<DemoData> demoData = demoDataMapper.queryAll();
@@ -677,7 +683,7 @@ public class PoiApplicationTests {
     @Test
     public void testBatchAddSeedUser() throws Exception {
 
-        InputStream is = new FileInputStream("d:/excel-poi/sourceData/seed-user-3.xlsx");
+        InputStream is = new FileInputStream("d:/excel-poi/sourceData/实验小学太湖校区大门口停车场20191230.xlsx");
 
         Workbook workbook = new XSSFWorkbook(is);
         Sheet sheet = workbook.getSheetAt(0);
@@ -691,7 +697,7 @@ public class PoiApplicationTests {
         List<OpSeedUserEntity> seedUserList = new ArrayList<>();
         // 读取商品列表数据 从第一行开始读取
         int rowCount = sheet.getPhysicalNumberOfRows();
-        for (int rowNum = 292; rowNum < 504; rowNum++) {
+        for (int rowNum = 1; rowNum < 122; rowNum++) {
             Row rowData = sheet.getRow(rowNum);
             if (rowData != null) {// 行不为空
 
@@ -705,27 +711,29 @@ public class PoiApplicationTests {
                 //String name = rowData.getCell(8).toString();
                 int parkingId = parkingDao.getParkingIdByName(name);
 
-                //Cell c3 = rowData.getCell(3);
-                String startDate = rowData.getCell(3).toString();
-                /*if (HSSFDateUtil.isCellDateFormatted(c3)) {//日期
+                //String startDate = rowData.getCell(3).toString();
+                String startDate = "";
+                Cell c3 = rowData.getCell(3);
+                if (HSSFDateUtil.isCellDateFormatted(c3)) {//日期
                     System.out.print("【日期】");
                     Date date = c3.getDateCellValue();
                     startDate = new DateTime(date).toString("yyyy-MM-dd");
-                }*/
-                String endDate = rowData.getCell(4).toString();
-                //Cell c4 = rowData.getCell(4);
-                /*if (HSSFDateUtil.isCellDateFormatted(c4)) {//日期
+                }
+                //String endDate = rowData.getCell(4).toString();
+                String endDate = "";
+                Cell c4 = rowData.getCell(4);
+                if (HSSFDateUtil.isCellDateFormatted(c4)) {//日期
                     System.out.print("【日期】");
                     Date date = c4.getDateCellValue();
                     endDate = new DateTime(date).toString("yyyy-MM-dd");
-                }*/
+                }
 
                 String num = rowData.getCell(0).toString();
 
                 String[] split = num.split("\\.");
                 String seedUserId = split[0];
                 seedUser.setSiteId(1);
-
+                seedUser.setId(Integer.parseInt(seedUserId));
                 String ownerName = rowData.getCell(1).toString();
                 seedUser.setCarownerName(ownerName);
                 String mobile = rowData.getCell(2).toString();
@@ -739,11 +747,18 @@ public class PoiApplicationTests {
                     case "种子用户":
                         seedUser.setSeedUserType("002");
                         break;
+                    case "教育类用户":
+                        seedUser.setSeedUserType("005");
+                        break;
+
                 }
                 String plateNo = rowData.getCell(7).toString();
                 seedUser.setCarPlateNo(plateNo);
                 String parkingName = rowData.getCell(8).toString();
+                //String comments = rowData.getCell(9).toString();
+                seedUser.setComments(null);
 
+                seedUser.setInvalidateStatus("001");
                 List<ParkingModel> parkingList = new ArrayList<>();
                 if ("全部".equals(parkingName)){
                     parkingList  = parkingDao.queryParkingModeByName(null);
@@ -806,6 +821,45 @@ public class PoiApplicationTests {
 
         if (userParkingList != null && userParkingList.size() >0){
             opUserParkingDao.batchAddUserParking(userParkingList);
+        }
+
+
+    }
+
+    //操作流水表
+    @Test
+    public void testOperateFlow() throws Exception {
+
+        InputStream is = new FileInputStream("d:/excel-poi/flow/流水表数据.xlsx");
+
+        Workbook workbook = new XSSFWorkbook(is);
+        Sheet sheet = workbook.getSheetAt(0);
+
+        // 读取标题所有内容
+
+        // 读取商品列表数据 从第一行开始读取
+        int rowCount = sheet.getPhysicalNumberOfRows();
+        for (int rowNum = 1; rowNum < 2120; rowNum++) {
+            Row rowData = sheet.getRow(rowNum);
+            if (rowData != null) {// 行不为空
+
+                //读取excel中的流水 和出场图片
+                String serialNo = rowData.getCell(5).toString();
+
+                String outImgUrl = rowData.getCell(11).toString();
+
+                PictureHistoryEntity historyBySerialNo = pictureHistoryMapper.getHistoryBySerialNo(serialNo);
+                if (historyBySerialNo != null){
+                    historyBySerialNo.getPicImgUrl();
+                    if (historyBySerialNo.getPicImgUrl().equals(outImgUrl)){
+                        //根据流水号删除 流水表
+                        int deleteCount = flowMapper.deleteFlowBySerialNo(serialNo);
+                        System.out.println("删除的结果=="+deleteCount);
+                    }
+                }
+
+            }
+
         }
 
 
