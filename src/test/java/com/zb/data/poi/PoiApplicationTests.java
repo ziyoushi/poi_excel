@@ -8,6 +8,7 @@ import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
+import org.apache.poi.xssf.streaming.SXSSFWorkbook;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.joda.time.DateTime;
 import org.junit.Test;
@@ -18,12 +19,11 @@ import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.util.CollectionUtils;
 
 import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.InputStream;
 import java.math.BigDecimal;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
+import java.util.*;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest
@@ -864,6 +864,78 @@ public class PoiApplicationTests {
 
 
     }
+
+    // 读取excel订单号 比较库里订单号 如果不同写入新的excel中；
+    @Test
+    public void testPutDataToNewExcel() throws Exception {
+
+        //需要读取的本地的excel数据 D:\excel-poi\duizhang\source
+        InputStream is = new FileInputStream("d:/excel-poi/duizhang/data/02/0216.xlsx");
+
+        Workbook workbook = new XSSFWorkbook(is);
+        Sheet sheet = workbook.getSheetAt(0);
+
+        // 读取标题所有内容
+        List<CwParkingOrder> list = new ArrayList<>();
+        // 读取商品列表数据 从第一行开始读取
+        int rowCount = sheet.getPhysicalNumberOfRows();
+
+        for (int rowNum = 1; rowNum < rowCount; rowNum++) {
+            Row rowData = sheet.getRow(rowNum);
+            if (rowData != null) {// 行不为空
+                // 读取cell
+                CwParkingOrder order = new CwParkingOrder();
+
+                String str1 = rowData.getCell(0).toString();
+                String[] split1 = str1.split("\\.");
+                order.setOrderNo(split1[0]);
+
+                String str2 = rowData.getCell(12).toString();
+                String[] split2 = str2.split("\\.");
+                order.setAmount(split2[0]);
+                list.add(order);
+            }
+
+        }
+        workbook.close();
+
+        //写入新的excel
+        Workbook writeWorkbook = new SXSSFWorkbook();
+
+        //创建一个sheet
+        Sheet wrSheet = writeWorkbook.createSheet("聚合码筛选后数据");
+
+        int rowNo = 0;
+        Row row1 = wrSheet.createRow(rowNo);
+
+        String[] titles = {"orderNo", "amount"};
+
+        for (int i = 0; i < titles.length; i++) {
+            Cell cell02 = row1.createCell(i);
+            cell02.setCellValue(titles[i]);
+        }
+
+        for (int i = 0; i < list.size(); i++) {
+
+            rowNo++;
+            Row row = wrSheet.createRow(rowNo);
+            CwParkingOrder order = list.get(i);
+
+            Cell orderNo = row.createCell(0);
+            orderNo.setCellValue("`"+order.getOrderNo());
+
+            Cell amount = row.createCell(1);
+            amount.setCellValue(order.getAmount());
+
+        }
+
+        FileOutputStream out = new FileOutputStream("d:/excel-poi/duizhang/after/0216.xlsx");
+        writeWorkbook.write(out);
+        writeWorkbook.close();
+
+    }
+
+
 
 
 }
