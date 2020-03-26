@@ -20,10 +20,10 @@
 
     <!-- 批量更新种子用户 -->
     <insert id="batchAddSeedUser">
-        INSERT  INTO `t_op_seed_user`(`id`,`site_id`,`carowner_name`,`car_plate_color`,`car_plate_no`,`contact_mobile`,`seed_user_type`,`invalidate_status`,comments)
+        INSERT  INTO `t_op_seed_user`(`id`,`site_id`,`carowner_name`,`car_plate_color`,`car_plate_no`,`contact_mobile`,`seed_user_type`,`invalidate_status`,comments,`is_deleted`)
         values
         <foreach collection="list" item="item" separator=",">
-            (#{item.id},#{item.siteId},#{item.carownerName},#{item.carPlateColor},#{item.carPlateNo},#{item.contactMobile},#{item.seedUserType},#{item.invalidateStatus},#{item.comments})
+            (#{item.id},#{item.siteId},#{item.carownerName},#{item.carPlateColor},#{item.carPlateNo},#{item.contactMobile},#{item.seedUserType},#{item.invalidateStatus},#{item.comments},#{item.isDeleted})
         </foreach>
     </insert>
 

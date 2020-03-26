@@ -79,4 +79,10 @@ public class OpSeedUserEntity implements Serializable {
 	@ApiModelProperty(name = "comments",value = "备注")
 	private String comments;
 
+	/**
+	 * 是否禁用
+	 */
+	@ApiModelProperty(name = "isDeleted",value = "是否禁用")
+	private String isDeleted;
+
 }

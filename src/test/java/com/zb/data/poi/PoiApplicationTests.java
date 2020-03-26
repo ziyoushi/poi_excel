@@ -71,6 +71,9 @@ public class PoiApplicationTests {
     @Autowired
     private FlowMapper flowMapper;
 
+    @Autowired
+    private CwParkingOrderMapper cwParkingOrderMapper;
+
     @Test
     public void testQueryAll() {
         List<DemoData> demoData = demoDataMapper.queryAll();
@@ -683,7 +686,7 @@ public class PoiApplicationTests {
     @Test
     public void testBatchAddSeedUser() throws Exception {
 
-        InputStream is = new FileInputStream("d:/excel-poi/sourceData/实验小学太湖校区大门口停车场20191230.xlsx");
+        InputStream is = new FileInputStream("d:/excel-poi/sourceData/VIP年卡用户.xlsx");
 
         Workbook workbook = new XSSFWorkbook(is);
         Sheet sheet = workbook.getSheetAt(0);
@@ -697,11 +700,12 @@ public class PoiApplicationTests {
         List<OpSeedUserEntity> seedUserList = new ArrayList<>();
         // 读取商品列表数据 从第一行开始读取
         int rowCount = sheet.getPhysicalNumberOfRows();
-        for (int rowNum = 1; rowNum < 122; rowNum++) {
+        for (int rowNum = 1; rowNum < rowCount; rowNum++) {
             Row rowData = sheet.getRow(rowNum);
             if (rowData != null) {// 行不为空
 
                 OpSeedUserEntity seedUser = new OpSeedUserEntity();
+                seedUser.setIsDeleted("001");
 
                 // 读取cell
                 //OpConstructionStatusEntity construction = new OpConstructionStatusEntity();
@@ -889,10 +893,19 @@ public class PoiApplicationTests {
                 String[] split1 = str1.split("\\.");
                 order.setOrderNo(split1[0]);
 
-                String str2 = rowData.getCell(12).toString();
-                String[] split2 = str2.split("\\.");
-                order.setAmount(split2[0]);
+                String amount = rowData.getCell(12).toString();
+                //String[] split2 = str2.split("\\.");
+                order.setAmount(amount);
+
+                //添加商户流水
+                String businessNo = rowData.getCell(7).toString();
+                order.setBusinessNo(businessNo);
+
+                String paymentTime = rowData.getCell(11).toString();
+                order.setPaymentTime(paymentTime);
+
                 list.add(order);
+
             }
 
         }
@@ -907,7 +920,7 @@ public class PoiApplicationTests {
         int rowNo = 0;
         Row row1 = wrSheet.createRow(rowNo);
 
-        String[] titles = {"orderNo", "amount"};
+        String[] titles = {"orderNo", "amount","businessNo","paymentTime"};
 
         for (int i = 0; i < titles.length; i++) {
             Cell cell02 = row1.createCell(i);
@@ -926,11 +939,53 @@ public class PoiApplicationTests {
             Cell amount = row.createCell(1);
             amount.setCellValue(order.getAmount());
 
+            Cell businessNo = row.createCell(2);
+            businessNo.setCellValue(order.getBusinessNo());
+
+            Cell paymentTime = row.createCell(3);
+            paymentTime.setCellValue(order.getPaymentTime());
+
         }
 
         FileOutputStream out = new FileOutputStream("d:/excel-poi/duizhang/after/0216.xlsx");
         writeWorkbook.write(out);
         writeWorkbook.close();
+
+    }
+
+    //银行流水和数据库中一致 但是es中的数据不一致
+    //执行时 需要切换数据库配置 注意查车牌时需要换日期
+    @Test
+    public void testCompareData() throws Exception {
+        InputStream is = new FileInputStream("C:/Users/changchen/Desktop/es中拉取的流水的信息/0216/交易流水列表_20200216.xlsx");
+
+        Workbook workbook = new XSSFWorkbook(is);
+        Sheet sheet = workbook.getSheetAt(0);
+
+        // 读取商品列表数据 从第一行开始读取
+        int rowCount = sheet.getPhysicalNumberOfRows();
+
+        List<String> paymentSerialNoList = cwParkingOrderMapper.getAllPaymentSerialNo();
+        Set<String> carPlateNoSet = new HashSet<>();
+
+        for (int rowNum = 1; rowNum < rowCount; rowNum++) {
+            Row rowData = sheet.getRow(rowNum);
+            if (rowData != null) {// 行不为空
+                //车牌号码
+                String carPlateNo = rowData.getCell(1).toString();
+                carPlateNoSet.add(carPlateNo);
+
+            }
+
+        }
+
+        for (String carPlate : paymentSerialNoList) {
+            if (!carPlateNoSet.contains(carPlate)){
+                System.out.println("es中没有的车牌 "+carPlate);
+            }
+        }
+
+        workbook.close();
 
     }
 

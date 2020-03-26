@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.zb.data.poi.mapper.CwParkingOrderMapper">
+
+    <resultMap id="queryParkingOrderResultMap" type="com.zb.data.poi.entity.CwParkingOrder">
+        <result column="amount" property="amount"/>
+        <result column="car_plate_no" property="carPlateNo"/>
+        <result column="in_time" property="inTime"/>
+        <result column="out_time" property="outTime"/>
+        <result column="parking_name" property="parkingName"/>
+    </resultMap>
+
+    <!-- 根据车牌号码、停车场name、入场时间查询 订单流水 -->
+    <select id="getParkingOrderByCondition" resultMap="queryParkingOrderResultMap">
+        SELECT o.car_plate_no,o.amount,o.`parking_name`,o.`in_time`,o.`out_time`
+        FROM t_cw_parking_order o
+        INNER JOIN t_cw_parking_payment_transaction p ON o.`payment_serial_no` = p.`serial_no`
+        WHERE p.channel = '002' AND p.payment_amount > 0 AND p.payment_datetime LIKE '2020-02-16%'
+        AND o.car_plate_no = #{carPlateNo}
+        AND o.in_time = #{inTime}
+        AND o.parking_name = #{parkingName};
+    </select>
+
+    <select id="queryAllParkingOrder" resultMap="queryParkingOrderResultMap">
+         SELECT o.car_plate_no,o.amount,o.`parking_name`,o.`in_time`,o.`out_time`
+        FROM t_cw_parking_order o
+        INNER JOIN t_cw_parking_payment_transaction p ON o.`payment_serial_no` = p.`serial_no`
+        WHERE p.channel = '002' AND p.payment_amount > 0 AND p.payment_datetime LIKE '2020-02-16%';
+    </select>
+
+    <select id="getAllPaymentSerialNo" resultType="string">
+        SELECT o.car_plate_no
+        FROM t_cw_parking_order o
+        INNER JOIN t_cw_parking_payment_transaction p ON o.`payment_serial_no` = p.`serial_no`
+        WHERE p.channel = '002' AND p.payment_amount > 0 AND p.payment_datetime LIKE '2020-02-16%';
+    </select>
+
+
+</mapper>
