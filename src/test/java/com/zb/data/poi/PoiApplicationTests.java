@@ -17,6 +17,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.util.CollectionUtils;
+import org.springframework.util.StringUtils;
 
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
@@ -682,11 +683,11 @@ public class PoiApplicationTests {
     }
 
 
-    //批量添加种子用户
+    //批量添加种子用户 单个停车场
     @Test
     public void testBatchAddSeedUser() throws Exception {
 
-        InputStream is = new FileInputStream("d:/excel-poi/sourceData/VIP年卡用户.xlsx");
+        InputStream is = new FileInputStream("d:/excel-poi/sourceData/吴江区实验0327.xlsx");
 
         Workbook workbook = new XSSFWorkbook(is);
         Sheet sheet = workbook.getSheetAt(0);
@@ -705,11 +706,14 @@ public class PoiApplicationTests {
             if (rowData != null) {// 行不为空
 
                 OpSeedUserEntity seedUser = new OpSeedUserEntity();
-                seedUser.setIsDeleted("001");
 
-                // 读取cell
-                //OpConstructionStatusEntity construction = new OpConstructionStatusEntity();
-                //SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
+                String comments = rowData.getCell(9).toString();
+                if (StringUtils.isEmpty(comments)){
+                    seedUser.setIsDeleted("001");
+                }else {
+                    seedUser.setIsDeleted("002");
+                }
+
                 //停车场name
                 String name = rowData.getCell(8).toString();
                 //String name = rowData.getCell(8).toString();
@@ -830,6 +834,153 @@ public class PoiApplicationTests {
 
     }
 
+    //批量添加种子用户 多个停车场
+    @Test
+    public void testBatchAddSeedUserSomeParking() throws Exception {
+
+        InputStream is = new FileInputStream("d:/excel-poi/sourceData/江苏省吴江实验小学教育集团(城中校区).xlsx");
+
+        Workbook workbook = new XSSFWorkbook(is);
+        Sheet sheet = workbook.getSheetAt(0);
+
+        List<OpUserParkingEntity> userParkingList = new ArrayList<>();
+        List<OpSeedUserEntity> seedUserList = new ArrayList<>();
+        // 读取商品列表数据 从第一行开始读取
+        int rowCount = sheet.getPhysicalNumberOfRows();
+        for (int rowNum = 1; rowNum < rowCount; rowNum++) {
+            Row rowData = sheet.getRow(rowNum);
+            if (rowData != null) {// 行不为空
+
+                OpSeedUserEntity seedUser = new OpSeedUserEntity();
+
+                String comments = rowData.getCell(9).toString();
+                if (StringUtils.isEmpty(comments)){
+                    seedUser.setIsDeleted("001");
+                }else {
+                    seedUser.setIsDeleted("002");
+                }
+
+                String startDate = "";
+                Cell c3 = rowData.getCell(3);
+                if (HSSFDateUtil.isCellDateFormatted(c3)) {//日期
+                    System.out.print("【日期】");
+                    Date date = c3.getDateCellValue();
+                    startDate = new DateTime(date).toString("yyyy-MM-dd");
+                }
+                String endDate = "";
+                Cell c4 = rowData.getCell(4);
+                if (HSSFDateUtil.isCellDateFormatted(c4)) {//日期
+                    System.out.print("【日期】");
+                    Date date = c4.getDateCellValue();
+                    endDate = new DateTime(date).toString("yyyy-MM-dd");
+                }
+
+                String num = rowData.getCell(0).toString();
+
+                String[] split = num.split("\\.");
+                String seedUserId = split[0];
+                seedUser.setSiteId(1);
+                seedUser.setId(Integer.parseInt(seedUserId));
+                String ownerName = rowData.getCell(1).toString();
+                seedUser.setCarownerName(ownerName);
+                String mobile = rowData.getCell(2).toString();
+                String[] split1 = mobile.split("\\.");
+                seedUser.setContactMobile(split1[0]);
+                String seedUserType = rowData.getCell(5).toString();
+                switch (seedUserType){
+                    case "VIP用户":
+                        seedUser.setSeedUserType("003");
+                        break;
+                    case "种子用户":
+                        seedUser.setSeedUserType("002");
+                        break;
+                    case "教育类用户":
+                        seedUser.setSeedUserType("005");
+                        break;
+                }
+                String plateNo = rowData.getCell(7).toString();
+                seedUser.setCarPlateNo(plateNo);
+                String parkingName = rowData.getCell(8).toString();
+                seedUser.setComments(null);
+
+                seedUser.setInvalidateStatus("001");
+                List<ParkingModel> parkingList = new ArrayList<>();
+                if ("全部".equals(parkingName)){
+                    parkingList  = parkingDao.queryParkingModeByName(null);
+                }else {
+                    //以、分割
+                    String[] split2 = parkingName.split("、");
+                    if (split2.length >0){
+                        for (String pName : split2) {
+                            ParkingModel parkingModel = parkingDao.queryParkingByName(pName);
+                            parkingList.add(parkingModel);
+                        }
+
+                    }else {
+                        parkingList =  parkingDao.queryParkingModeByName(parkingName);
+                    }
+                }
+                if (!CollectionUtils.isEmpty(parkingList)){
+                    for (ParkingModel parkingModel : parkingList) {
+                        OpUserParkingEntity userParkingEntity = new OpUserParkingEntity();
+                        userParkingEntity.setCarPlateNo(plateNo);
+                        userParkingEntity.setIsWhite(1);
+                        userParkingEntity.setParkingNo(parkingModel.getCode());
+                        userParkingEntity.setParkingId(parkingModel.getId());
+                        userParkingEntity.setSendStatus("001");
+                        userParkingEntity.setStatus("1");
+                        userParkingEntity.setCreateDatetime(new Date());
+                        userParkingEntity.setUpdateDatetime(new Date());
+                        userParkingEntity.setStartDate(startDate);
+                        userParkingEntity.setEndDate(endDate);
+                        userParkingEntity.setSeedUserId(Integer.parseInt(seedUserId));
+                        userParkingEntity.setParkingId(parkingModel.getId());
+                        userParkingList.add(userParkingEntity);
+                    }
+                }
+                //车牌颜色
+                String color = rowData.getCell(6).toString();
+                /**
+                 * 001       蓝牌
+                 * 002       黄牌
+                 * 003       绿牌
+                 * 004       白牌
+                 * 005       其他
+                 */
+                switch (color) {
+                    case "蓝牌":
+                        seedUser.setCarPlateColor("001");
+                        break;
+                    case "黄牌":
+                        seedUser.setCarPlateColor("002");
+                        break;
+                    case "绿牌":
+                        seedUser.setCarPlateColor("003");
+                        break;
+                    case "白牌":
+                        seedUser.setCarPlateColor("004");
+                        break;
+                    case "其他":
+                        seedUser.setCarPlateColor("005");
+                        break;
+                }
+                seedUserList.add(seedUser);
+
+            }
+
+        }
+
+        if (seedUserList != null && seedUserList.size() >0){
+            seedUserDao.batchAddSeedUser(seedUserList);
+        }
+
+        if (userParkingList != null && userParkingList.size() >0){
+            opUserParkingDao.batchAddUserParking(userParkingList);
+        }
+
+    }
+
+
     //操作流水表
     @Test
     public void testOperateFlow() throws Exception {
@@ -873,7 +1024,7 @@ public class PoiApplicationTests {
     public void testPutDataToNewExcel() throws Exception {
 
         //需要读取的本地的excel数据 D:\excel-poi\duizhang\source
-        InputStream is = new FileInputStream("d:/excel-poi/duizhang/data/02/0216.xlsx");
+        InputStream is = new FileInputStream("d:/excel-poi/duizhang/data/02/0218-data.xlsx");
 
         Workbook workbook = new XSSFWorkbook(is);
         Sheet sheet = workbook.getSheetAt(0);
@@ -947,7 +1098,7 @@ public class PoiApplicationTests {
 
         }
 
-        FileOutputStream out = new FileOutputStream("d:/excel-poi/duizhang/after/0216.xlsx");
+        FileOutputStream out = new FileOutputStream("d:/excel-poi/duizhang/after/0218after.xlsx");
         writeWorkbook.write(out);
         writeWorkbook.close();
 

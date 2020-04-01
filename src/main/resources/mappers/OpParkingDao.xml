@@ -76,4 +76,13 @@
          </if>
     </select>
 
+    <!-- 根据停车场name查询停车场信息 -->
+    <select id="queryParkingByName" resultMap="parking_model_resultMap" >
+        select id,code from t_op_parking where
+        <if test="name != null and name != ''">
+            `name` = #{name}
+        </if>
+    </select>
+
+
 </mapper>
