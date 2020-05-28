@@ -687,7 +687,7 @@ public class PoiApplicationTests {
     @Test
     public void testBatchAddSeedUser() throws Exception {
 
-        InputStream is = new FileInputStream("d:/excel-poi/sourceData/吴江区实验0327.xlsx");
+        InputStream is = new FileInputStream("d:/excel-poi/sourceData/实验幼儿园替换车牌录入名单2020.4.13.xlsx");
 
         Workbook workbook = new XSSFWorkbook(is);
         Sheet sheet = workbook.getSheetAt(0);
@@ -838,7 +838,7 @@ public class PoiApplicationTests {
     @Test
     public void testBatchAddSeedUserSomeParking() throws Exception {
 
-        InputStream is = new FileInputStream("d:/excel-poi/sourceData/江苏省吴江实验小学教育集团(城中校区).xlsx");
+        InputStream is = new FileInputStream("d:/excel-poi/sourceData/202005/市场监督局月卡录入名单.xlsx");
 
         Workbook workbook = new XSSFWorkbook(is);
         Sheet sheet = workbook.getSheetAt(0);
@@ -980,6 +980,31 @@ public class PoiApplicationTests {
 
     }
 
+    //主键自增问题
+    @Test
+    public void batchAddSeedUserId(){
+        List<OpSeedUserEntity> seedUserList = new ArrayList<>();
+        for (int i=1948;i<3263;i++){
+            OpSeedUserEntity entity = new OpSeedUserEntity();
+            entity.setId(i);
+            entity.setSiteId(1);
+            entity.setCarownerName("hello"+i);
+            entity.setIsDeleted("001");
+            entity.setInvalidateStatus("001");
+            entity.setCarPlateColor("苏A"+i);
+            entity.setCarPlateColor("001");
+            entity.setContactMobile("13245698456");
+            entity.setSeedUserType("001");
+            entity.setComments(null);
+            seedUserList.add(entity);
+
+            //(`id`,`site_id`,`carowner_name`,`car_plate_color`,
+            // `car_plate_no`,`contact_mobile`,`seed_user_type`,
+            // `invalidate_status`,comments,`is_deleted`)
+        }
+        seedUserDao.batchAddSeedUser(seedUserList);
+
+    }
 
     //操作流水表
     @Test
