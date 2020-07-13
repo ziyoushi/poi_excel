@@ -687,7 +687,9 @@ public class PoiApplicationTests {
     @Test
     public void testBatchAddSeedUser() throws Exception {
 
-        InputStream is = new FileInputStream("d:/excel-poi/sourceData/实验幼儿园替换车牌录入名单2020.4.13.xlsx");
+        //
+        //InputStream is = new FileInputStream("d:/excel-poi/sourceData/实验幼儿园替换车牌录入名单2020.4.13.xlsx");
+        InputStream is = new FileInputStream("E:\\吴江work\\种子用户管理\\种子用户录入\\北外苏州附校-录入信息表.xlsx");
 
         Workbook workbook = new XSSFWorkbook(is);
         Sheet sheet = workbook.getSheetAt(0);
