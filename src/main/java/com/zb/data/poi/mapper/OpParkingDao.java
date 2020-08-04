@@ -30,10 +30,19 @@ public interface OpParkingDao extends BaseMapper<OpParkingEntity> {
 
 
     /**
+     * 根据一级分类名查看所有停车场code
+     * @param parkingName
+     * @return
+     */
+    List<ParkingModel> queryParkingByCityName(@Param("cityName") String parkingName);
+
+
+    /**
      * 根据name 查询单个停车场信息
      * @param name
      * @return
      */
     ParkingModel queryParkingByName(@Param("name") String name);
+
 
 }

@@ -27,4 +27,9 @@
         </foreach>
     </insert>
 
+    <select id="querySeedUserIdByCarPlateNo" resultType="int">
+        select id from t_op_seed_user where id > 4060 and car_plate_no = #{carPlateNo};
+    </select>
+
+
 </mapper>

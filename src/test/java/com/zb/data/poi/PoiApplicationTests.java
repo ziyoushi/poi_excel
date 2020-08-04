@@ -836,11 +836,101 @@ public class PoiApplicationTests {
 
     }
 
+    //补充数据 添加一级分类数据
+    @Test
+    public void testBatchAddUserParking() throws Exception {
+
+        InputStream is = new FileInputStream("d:/excel-poi/sourceData/202008/种子用户模板_20200804.xlsx");
+       // InputStream is = new FileInputStream("E:\\吴江work\\种子用户管理\\种子用户录入\\北外苏州附校-录入信息表.xlsx");
+
+        Workbook workbook = new XSSFWorkbook(is);
+        Sheet sheet = workbook.getSheetAt(0);
+
+        // 读取标题所有内容
+
+        //List<DemoData> list = new ArrayList<>();
+        //List<OpParkinglotEntity> list = new ArrayList<>();
+        List<OpParkingEntity> list = new ArrayList<>();
+        List<OpUserParkingEntity> userParkingList = new ArrayList<>();
+        List<OpSeedUserEntity> seedUserList = new ArrayList<>();
+        // 读取商品列表数据 从第一行开始读取
+        int rowCount = sheet.getPhysicalNumberOfRows();
+        for (int rowNum = 1; rowNum < rowCount; rowNum++) {
+            Row rowData = sheet.getRow(rowNum);
+            if (rowData != null) {// 行不为空
+
+                OpSeedUserEntity seedUser = new OpSeedUserEntity();
+
+                String startDate = "";
+                Cell c3 = rowData.getCell(3);
+                if (HSSFDateUtil.isCellDateFormatted(c3)) {//日期
+                    System.out.print("【日期】");
+                    Date date = c3.getDateCellValue();
+                    startDate = new DateTime(date).toString("yyyy-MM-dd");
+                }
+                //String endDate = rowData.getCell(4).toString();
+                String endDate = "";
+                Cell c4 = rowData.getCell(4);
+                if (HSSFDateUtil.isCellDateFormatted(c4)) {//日期
+                    System.out.print("【日期】");
+                    Date date = c4.getDateCellValue();
+                    endDate = new DateTime(date).toString("yyyy-MM-dd");
+                }
+
+                String plateNo = rowData.getCell(7).toString();
+                //根据车牌号码查询seedUserId;
+                int sId = seedUserDao.querySeedUserIdByCarPlateNo(plateNo);
+
+                seedUser.setCarPlateNo(plateNo);
+                String parkingName = rowData.getCell(8).toString();
+
+                seedUser.setInvalidateStatus("001");
+                List<ParkingModel> parkingList = new ArrayList<>();
+                if ("全部".equals(parkingName)){
+                    parkingList  = parkingDao.queryParkingModeByName(null);
+                }else if ("吴江".equals(parkingName)){
+                    parkingList = parkingDao.queryParkingByCityName(parkingName);
+                }else {
+                    parkingList =  parkingDao.queryParkingModeByName(parkingName);
+                }
+
+                if (!CollectionUtils.isEmpty(parkingList)){
+                    for (ParkingModel parkingModel : parkingList) {
+                        OpUserParkingEntity userParkingEntity = new OpUserParkingEntity();
+                        userParkingEntity.setCarPlateNo(plateNo);
+                        userParkingEntity.setIsWhite(1);
+                        userParkingEntity.setParkingNo(parkingModel.getCode());
+                        userParkingEntity.setParkingId(parkingModel.getId());
+                        userParkingEntity.setSendStatus("001");
+                        userParkingEntity.setStatus("1");
+                        userParkingEntity.setCreateDatetime(new Date());
+                        userParkingEntity.setUpdateDatetime(new Date());
+                        userParkingEntity.setStartDate(startDate);
+                        userParkingEntity.setEndDate(endDate);
+                        userParkingEntity.setSeedUserId(sId);
+                        userParkingList.add(userParkingEntity);
+                    }
+                }
+
+            }
+
+        }
+
+
+        if (userParkingList != null && userParkingList.size() >0){
+            opUserParkingDao.batchAddUserParking(userParkingList);
+        }
+
+
+    }
+
+
+
     //批量添加种子用户 多个停车场
     @Test
     public void testBatchAddSeedUserSomeParking() throws Exception {
 
-        InputStream is = new FileInputStream("d:/excel-poi/sourceData/202005/市场监督局月卡录入名单.xlsx");
+        InputStream is = new FileInputStream("d:/excel-poi/sourceData/202007/体育局录入名单.xlsx");
 
         Workbook workbook = new XSSFWorkbook(is);
         Sheet sheet = workbook.getSheetAt(0);
@@ -867,6 +957,10 @@ public class PoiApplicationTests {
                 if (HSSFDateUtil.isCellDateFormatted(c3)) {//日期
                     System.out.print("【日期】");
                     Date date = c3.getDateCellValue();
+                    long time = date.getTime();
+                    String start = String.valueOf(time);
+                    System.out.println("开始日期"+start);
+
                     startDate = new DateTime(date).toString("yyyy-MM-dd");
                 }
                 String endDate = "";
@@ -874,6 +968,8 @@ public class PoiApplicationTests {
                 if (HSSFDateUtil.isCellDateFormatted(c4)) {//日期
                     System.out.print("【日期】");
                     Date date = c4.getDateCellValue();
+                    String end = String.valueOf(date.getTime());
+                    System.out.println("结束时间"+end);
                     endDate = new DateTime(date).toString("yyyy-MM-dd");
                 }
 
@@ -973,11 +1069,11 @@ public class PoiApplicationTests {
         }
 
         if (seedUserList != null && seedUserList.size() >0){
-            seedUserDao.batchAddSeedUser(seedUserList);
+          //  seedUserDao.batchAddSeedUser(seedUserList);
         }
 
         if (userParkingList != null && userParkingList.size() >0){
-            opUserParkingDao.batchAddUserParking(userParkingList);
+          //  opUserParkingDao.batchAddUserParking(userParkingList);
         }
 
     }

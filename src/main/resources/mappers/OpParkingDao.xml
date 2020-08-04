@@ -69,12 +69,23 @@
     </resultMap>
 
     <!-- 根据停车场名查询对应的code id -->
-    <select id="queryParkingModeByName" resultMap="parking_model_resultMap" >
+    <select id="queryParkingModeByName" resultMap="parking_model_resultMap">
         select id,code from t_op_parking where
-         <if test="name != null and name != ''">
-             `name` = #{name}
-         </if>
+        <if test="name != null and name != ''">
+            `name` = #{name}
+        </if>
     </select>
+
+    <!-- 根据一级分类名查看全部停车场 -->
+    <select id="queryParkingByCityName" resultMap="parking_model_resultMap" >
+        SELECT id,code FROM t_op_parking WHERE excel_id IN (
+        SELECT id FROM t_saas_area_excel WHERE
+        <if test="cityName != null and cityName != ''">
+            city_name = #{cityName}
+        </if>
+        )
+    </select>
+
 
     <!-- 根据停车场name查询停车场信息 -->
     <select id="queryParkingByName" resultMap="parking_model_resultMap" >

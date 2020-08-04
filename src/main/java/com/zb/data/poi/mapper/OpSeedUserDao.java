@@ -18,4 +18,6 @@ import java.util.List;
 public interface OpSeedUserDao extends BaseMapper<OpSeedUserEntity> {
 	//批量添加种子用户表
     int batchAddSeedUser(@Param("list") List<OpSeedUserEntity> list);
+
+    int querySeedUserIdByCarPlateNo(@Param("carPlateNo") String carPlateNo);
 }
