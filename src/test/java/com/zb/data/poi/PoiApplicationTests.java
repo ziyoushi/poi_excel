@@ -840,19 +840,14 @@ public class PoiApplicationTests {
     @Test
     public void testBatchAddUserParking() throws Exception {
 
-        InputStream is = new FileInputStream("d:/excel-poi/sourceData/202008/种子用户模板_20200804.xlsx");
+        InputStream is = new FileInputStream("d:/excel-poi/sourceData/202008/0807dao入.xlsx");
        // InputStream is = new FileInputStream("E:\\吴江work\\种子用户管理\\种子用户录入\\北外苏州附校-录入信息表.xlsx");
 
         Workbook workbook = new XSSFWorkbook(is);
         Sheet sheet = workbook.getSheetAt(0);
 
         // 读取标题所有内容
-
-        //List<DemoData> list = new ArrayList<>();
-        //List<OpParkinglotEntity> list = new ArrayList<>();
-        List<OpParkingEntity> list = new ArrayList<>();
         List<OpUserParkingEntity> userParkingList = new ArrayList<>();
-        List<OpSeedUserEntity> seedUserList = new ArrayList<>();
         // 读取商品列表数据 从第一行开始读取
         int rowCount = sheet.getPhysicalNumberOfRows();
         for (int rowNum = 1; rowNum < rowCount; rowNum++) {
@@ -868,7 +863,6 @@ public class PoiApplicationTests {
                     Date date = c3.getDateCellValue();
                     startDate = new DateTime(date).toString("yyyy-MM-dd");
                 }
-                //String endDate = rowData.getCell(4).toString();
                 String endDate = "";
                 Cell c4 = rowData.getCell(4);
                 if (HSSFDateUtil.isCellDateFormatted(c4)) {//日期
@@ -916,15 +910,11 @@ public class PoiApplicationTests {
 
         }
 
-
         if (userParkingList != null && userParkingList.size() >0){
             opUserParkingDao.batchAddUserParking(userParkingList);
         }
 
-
     }
-
-
 
     //批量添加种子用户 多个停车场
     @Test
